@@ -27,15 +27,16 @@ from django.urls import path, include
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("book_service.urls", namespace="book_service")),
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path(
-        "api/doc/swagger/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
-        name="swagger-ui",
-    ),
-    path(
-        "api/doc/redoc/",
-        SpectacularRedocView.as_view(url_name="schema"),
-        name="redoc",
-    ),
+    path("api/", include("borrowing.urls", namespace="borrowing")),
+    # path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    # path(
+    #     "api/doc/swagger/",
+    #     SpectacularSwaggerView.as_view(url_name="schema"),
+    #     name="swagger-ui",
+    # ),
+    # path(
+    #     "api/doc/redoc/",
+    #     SpectacularRedocView.as_view(url_name="schema"),
+    #     name="redoc",
+    # ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
