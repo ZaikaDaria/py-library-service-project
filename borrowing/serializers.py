@@ -14,3 +14,25 @@ class BorrowingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Borrowing
         fields = "__all__"
+
+
+class CreateBorrowingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Borrowing
+        fields = ('book', 'borrow_date', 'expected_return_date')
+
+    @staticmethod
+    def validated_book(book):
+        if book.inventory <= 0:
+            raise serializers.ValidationError("Book is out of stock.")
+        return book
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        borrowing = Borrowing.objects.create(user=user, **validated_data)
+
+        book = validated_data['book']
+        book.inventory -= 1
+        book.save()
+
+        return borrowing
