@@ -143,3 +143,12 @@ SIMPLE_JWT = {
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+
+CELERY_RESULT_BACKEND = "redis://redis:6379"
+CELERY_BEAT_SCHEDULE = {
+    "check_overdue_borrowings_daily": {
+        "task": "borrowing.tasks.check_overdue_borrowings",
+        "schedule": timedelta(days=1),
+    },
+}
