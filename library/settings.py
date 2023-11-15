@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "book_service",
     "borrowing",
     "customer",
+    "payments",
 ]
 
 MIDDLEWARE = [
