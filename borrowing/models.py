@@ -1,23 +1,15 @@
-from django.contrib.auth.models import User
+from book_service.models import Book
 from django.db import models
 
 
-class Book(models.Model):
-    title = models.CharField(max_length=255)
-    author = models.CharField(max_length=255)
-
-
 class Borrowing(models.Model):
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    user = models.ForeignKey("user.User", on_delete=models.DO_NOTHING, related_name="borrowings")
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="borrowings")
     borrow_date = models.DateField()
     expected_return_date = models.DateField()
     actual_return_date = models.DateField(null=True, blank=True)
 
-
-class Payment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_date = models.DateField()
-
-    def __str__(self):
-        return f"Payment ID: {self.id}"
+    def calculate_total_price(self):
+        if self.book:
+            return self.book.price
+        return 0

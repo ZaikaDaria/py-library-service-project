@@ -25,10 +25,11 @@ class Book(models.Model):
     cover = models.ImageField(null=True, upload_to=book_cover_file_path, blank=True)
     inventory = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     daily_fee = models.DecimalField(max_digits=5, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
         verbose_name = "book"
         verbose_name_plural = "books"
 
     def __str__(self):
-        return f"{self.title} {self.author}"
+        return f"{self.title} {self.author} {self.price}"

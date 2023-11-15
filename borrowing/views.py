@@ -1,8 +1,8 @@
 from django.utils import timezone
 from rest_framework.response import Response
-from rest_framework import status, viewsets, permissions
+from rest_framework import status, viewsets
 from borrowing.filters import BorrowingFilter
-from borrowing.models import Borrowing, Payment
+from borrowing.models import Borrowing
 from borrowing.serializers import CreateBorrowingSerializer, BorrowingSerializer, PaymentSerializer
 
 
@@ -44,16 +44,3 @@ class ReturnBorrowingViewSet(viewsets.ViewSet):
 
         serializer = BorrowingSerializer(borrowing)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class PaymentViewSet(viewsets.ModelViewSet):
-    queryset = Payment.objects.all()
-    serializer_class = PaymentSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_staff:
-            return Payment.objects.all()
-        return Payment.objects.filter(user=user)
-
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
