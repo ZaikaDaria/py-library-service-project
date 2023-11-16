@@ -38,7 +38,6 @@ class ReturnBorrowingViewSet(viewsets.ViewSet):
         borrowing.actual_return_date = timezone.now()
         borrowing.save()
 
-        # Increase book inventory by 1
         borrowing.book.inventory += 1
         borrowing.book.save()
 

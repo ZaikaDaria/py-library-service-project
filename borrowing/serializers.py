@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from borrowing.models import Borrowing, Book, Payment
+from borrowing.models import Borrowing, Book
 from borrowing.telegram_notification import send_telegram_notification
+from payments.serializers import PaymentSerializer
 
 
 class BookSerializer(serializers.ModelSerializer):
@@ -11,6 +12,7 @@ class BookSerializer(serializers.ModelSerializer):
 
 class BorrowingSerializer(serializers.ModelSerializer):
     book_info = BookSerializer(source="book", read_only=True)
+    payments = PaymentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Borrowing
@@ -39,9 +41,3 @@ class CreateBorrowingSerializer(serializers.ModelSerializer):
         send_telegram_notification(message)
 
         return borrowing
-
-
-class PaymentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Payment
-        fields = "__all__"
