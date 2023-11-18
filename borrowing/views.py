@@ -1,9 +1,19 @@
+import stripe
+
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
 from django.utils import timezone
+from django.urls import reverse
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status, viewsets
+
 from borrowing.filters import BorrowingFilter
 from borrowing.models import Borrowing
-from borrowing.serializers import CreateBorrowingSerializer, BorrowingSerializer, PaymentSerializer
+from borrowing.serializers import CreateBorrowingSerializer, BorrowingSerializer
+from library.settings import STRIPE_SECRET_KEY
+
+stripe.api_key = STRIPE_SECRET_KEY
 
 
 class BorrowingViewSet(viewsets.ModelViewSet):
@@ -22,6 +32,19 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         if self.request.user.is_staff:
             return Borrowing.objects.all()
         return Borrowing.objects.filter(user=self.request.user)
+
+    @action(detail=True, methods=["post"])
+    def cancel_action(self, request, pk=None):
+        borrowing = get_object_or_404(Borrowing, pk=pk)
+
+        try:
+            cancel_endpoint = reverse("borrowing:cancel-action", kwargs={"pk": borrowing.pk})
+            absolute_cancel_url = request.build_absolute_uri(cancel_endpoint)
+            return JsonResponse({"success": True,
+                                 "message": f"Payment can be paid a bit later. Session available for 24h. Cancel URL: {absolute_cancel_url}"})
+        except stripe.error.StripeError as e:
+            print(f"Error retrieving Stripe Session: {str(e)}")
+            return JsonResponse({"success": False, "message": "Error retrieving Stripe Session"})
 
 
 class ReturnBorrowingViewSet(viewsets.ViewSet):
