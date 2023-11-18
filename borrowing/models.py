@@ -13,3 +13,7 @@ class Borrowing(models.Model):
         if self.book:
             return self.book.price
         return 0
+
+    @property
+    def is_overdue(self):
+        return self.actual_return_date and self.actual_return_date > self.expected_return_date
