@@ -158,3 +158,13 @@ CELERY_BEAT_SCHEDULE = {
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8000",
+]
+
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = "/vol/web/media"

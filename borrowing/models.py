@@ -1,9 +1,10 @@
 from book_service.models import Book
+from customer.models import User
 from django.db import models
 
 
 class Borrowing(models.Model):
-    user = models.ForeignKey("user.User", on_delete=models.DO_NOTHING, related_name="borrowings")
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="borrowings")
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="borrowings")
     borrow_date = models.DateField()
     expected_return_date = models.DateField()
