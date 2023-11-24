@@ -28,10 +28,9 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         serializer = CreateBorrowingSerializer(data=request.data, context={"request": request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         if self.request.user.is_staff:
@@ -39,26 +38,25 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         return Borrowing.objects.filter(user=self.request.user)
 
     @action(detail=True, methods=["post"])
-    def cancel_action(self, request, pk=None):
+    def cancel(self, request, pk=None):
         borrowing = get_object_or_404(Borrowing, pk=pk)
 
         try:
             cancel_endpoint = reverse("borrowing:cancel-action", kwargs={"pk": borrowing.pk})
             absolute_cancel_url = request.build_absolute_uri(cancel_endpoint)
             return JsonResponse({"success": True,
-                                 "message": f"Payment can be paid a bit later. Session available for 24h. Cancel URL: {absolute_cancel_url}"})
+                                 "message": f"Payment can be paid a bit later. Session available for 24h. Cancel URL: "
+                                            f"{absolute_cancel_url}"})
         except stripe.error.StripeError as e:
             print(f"Error retrieving Stripe Session: {str(e)}")
             return JsonResponse({"success": False, "message": "Error retrieving Stripe Session"})
 
+    @action(detail=True, methods=["post"])
+    def return_borrowing(self, request, pk=None):
+        borrowing = get_object_or_404(Borrowing, pk=pk)
 
-class ReturnBorrowingViewSet(viewsets.ViewSet):
-    def create(self, request, *args, **kwargs):
-        borrowing_id = request.data.get("borrowing_id")
-        try:
-            borrowing = Borrowing.objects.get(id=borrowing_id)
-        except Borrowing.DoesNotExist:
-            return Response({"detail": "Borrowing not found"}, status=status.HTTP_404_NOT_FOUND)
+        if borrowing.actual_return_date:
+            return Response({"detail": "Borrowing has already been returned"}, status=status.HTTP_400_BAD_REQUEST)
 
         if borrowing.is_overdue:
             days_overdue = (borrowing.actual_return_date - borrowing.expected_return_date).days
@@ -79,9 +77,6 @@ class ReturnBorrowingViewSet(viewsets.ViewSet):
                 print(f"Failed to create Fine Payment for Borrowing ID {borrowing.id}")
                 return Response({'error': 'Failed to create Fine Payment'},
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        if borrowing.actual_return_date:
-            return Response({"detail": "Borrowing has already been returned"}, status=status.HTTP_400_BAD_REQUEST)
 
         borrowing.actual_return_date = timezone.now()
         borrowing.save()

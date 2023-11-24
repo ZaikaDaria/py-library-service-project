@@ -8,6 +8,6 @@ router.register("", PaymentViewSet)
 
 urlpatterns = [
     path("", include(router.urls))
-]
+] + router.urls
 
 app_name = "payments"
