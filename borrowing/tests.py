@@ -5,7 +5,6 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse
 from .models import Borrowing, Book
-from .serializers import BorrowingSerializer, CreateBorrowingSerializer
 from decimal import Decimal
 from datetime import date, timedelta
 
@@ -28,7 +27,7 @@ class BorrowingViewSetTest(TestCase):
             daily_fee=Decimal("1.99"),
             price=Decimal("19.99"),
         )
-
+        self.initial_inventory = self.book.inventory
         self.client = APIClient()
 
     def test_create_borrowing(self):
