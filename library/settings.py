@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["0.0.0.0", "localhost:"]
 
 # Application definition
 
@@ -40,9 +40,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
+    "drf_spectacular",
     "book_service",
     "borrowing",
     "customer",
+    "payments",
 ]
 
 MIDDLEWARE = [
@@ -126,11 +128,14 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
 REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema"
 }
 
 SIMPLE_JWT = {
@@ -138,3 +143,27 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
 }
+
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+
+CELERY_RESULT_BACKEND = "redis://redis:6379"
+CELERY_BEAT_SCHEDULE = {
+    "check_overdue_borrowings_daily": {
+        "task": "borrowing.tasks.check_overdue_borrowings",
+        "schedule": timedelta(days=1),
+    },
+}
+
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8000",
+]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = "/vol/web/media"
